@@ -139,6 +139,7 @@ class SigmaShake:
         self.gateway = GatewayResource(self._transport)
         self.db = DBResource(self._transport)
         self.memory = MemoryResource(self._transport)
+        self.fleet = FleetResource(self._transport)
         # documents uses its own resource
         self.documents = _DocumentsResource(self._transport)
 
