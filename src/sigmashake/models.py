@@ -436,3 +436,141 @@ class ClusterStatusResponse(BaseModel):
     node_count: int = 0
     healthy_nodes: int = 0
     version: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Fleet
+# ---------------------------------------------------------------------------
+
+class AgentStatus(str, Enum):
+    active = "active"
+    idle = "idle"
+    busy = "busy"
+    error = "error"
+    disconnected = "disconnected"
+    offline = "offline"
+
+
+class CommandType(str, Enum):
+    restart = "restart"
+    update_config = "update_config"
+    revoke_credentials = "revoke_credentials"
+    inject_tool = "inject_tool"
+    remove_tool = "remove_tool"
+    pause = "pause"
+    resume = "resume"
+    collect_diagnostics = "collect_diagnostics"
+    update_version = "update_version"
+
+
+class FleetStatus(BaseModel):
+    total: int = 0
+    online: int = 0
+    degraded: int = 0
+    offline: int = 0
+
+
+class FleetAgent(BaseModel):
+    agent_id: str
+    status: AgentStatus
+    last_seen: Optional[datetime] = None
+    version: Optional[str] = None
+    cpu_pct: Optional[float] = None
+    memory_mb: Optional[float] = None
+    llm_cost_usd: Optional[float] = None
+    shard_id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    connected_at: Optional[datetime] = None
+
+
+class FleetAgentDetail(BaseModel):
+    agent_id: str
+    status: AgentStatus
+    last_seen: Optional[datetime] = None
+    version: Optional[str] = None
+    cpu_pct: Optional[float] = None
+    memory_mb: Optional[float] = None
+    llm_tokens_in: int = 0
+    llm_tokens_out: int = 0
+    llm_cost_usd: Optional[float] = None
+    shard_id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    connected_at: Optional[datetime] = None
+    capabilities: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FleetAgentListResponse(BaseModel):
+    agents: List[FleetAgent] = Field(default_factory=list)
+    total: int = 0
+    limit: int = 100
+    offset: int = 0
+
+
+class FleetCommand(BaseModel):
+    command_type: CommandType
+    payload: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FleetCommandResponse(BaseModel):
+    command_id: str
+    agent_id: Optional[str] = None
+    command_type: CommandType
+    status: str = "pending"
+    issued_at: Optional[datetime] = None
+
+
+class FleetBroadcastResponse(BaseModel):
+    command_id: str
+    command_type: CommandType
+    target_count: int = 0
+    issued_at: Optional[datetime] = None
+
+
+class FleetMetricPoint(BaseModel):
+    timestamp: datetime
+    cpu_pct: Optional[float] = None
+    memory_mb: Optional[float] = None
+    llm_tokens_in: int = 0
+    llm_tokens_out: int = 0
+    llm_cost_usd: Optional[float] = None
+
+
+class FleetMetricsResponse(BaseModel):
+    agent_id: str
+    metrics: List[FleetMetricPoint] = Field(default_factory=list)
+
+
+class FleetCommandAuditEntry(BaseModel):
+    id: str
+    command_type: CommandType
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    issued_at: datetime
+    acked: bool = False
+    ack_message: Optional[str] = None
+
+
+class FleetCommandHistory(BaseModel):
+    agent_id: str
+    commands: List[FleetCommandAuditEntry] = Field(default_factory=list)
+    total: int = 0
+
+
+class FleetAlertThresholds(BaseModel):
+    missed_heartbeats: int = 3
+    error_rate_pct: float = 5.0
+
+
+class FleetConfig(BaseModel):
+    heartbeat_interval_secs: int = 30
+    metrics_interval_secs: int = 60
+    max_agents: int = 1000
+    alert_thresholds: FleetAlertThresholds = Field(default_factory=FleetAlertThresholds)
+    auto_scale_enabled: bool = False
+
+
+class FleetEvent(BaseModel):
+    event_type: str
+    agent_id: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    data: Dict[str, Any] = Field(default_factory=dict)
