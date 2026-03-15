@@ -11,6 +11,7 @@ from .accounts import AccountsResource
 from .agents import AgentsResource
 from .db import DBResource
 from .exceptions import raise_for_status
+from .fleet import FleetResource
 from .gateway import GatewayResource
 from .memory import MemoryResource
 from .shield import ShieldResource
