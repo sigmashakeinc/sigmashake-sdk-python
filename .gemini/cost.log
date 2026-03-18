@@ -1,0 +1,12 @@
+2026-03-15T20:16:12Z	Edit	/home/user/ss/shared/coordination/workstreams/ws-005.md	4	audit,task-lock,lint,auto-commit
+2026-03-15T20:16:33Z	Edit	src/sigmashake/models.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:16:53Z	Write	src/sigmashake/fleet.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:16:59Z	Edit	src/sigmashake/client.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:17:05Z	Edit	src/sigmashake/client.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:18:00Z	Write	tests/test_fleet.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:18:28Z	Edit	/home/user/ss/shared/coordination/workstreams/ws-005.md	4	audit,task-lock,lint,auto-commit
+2026-03-15T20:24:33Z	Write	.gemini/skills/publish/SKILL.md	4	audit,task-lock,lint,auto-commit
+2026-03-15T20:25:37Z	Edit	src/sigmashake/_version.py	5	audit,task-lock,security-scan,lint,auto-commit
+2026-03-15T20:25:38Z	Edit	pyproject.toml	4	audit,task-lock,lint,auto-commit
+2026-03-15T20:26:28Z	Edit	pyproject.toml	4	audit,task-lock,lint,auto-commit
+2026-03-15T20:26:46Z	Edit	pyproject.toml	4	audit,task-lock,lint,auto-commit
