@@ -19,3 +19,4 @@ __pycache__/
 
 # Gemini CLI runtime artifacts
 .gemini/
+.env

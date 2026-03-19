@@ -38,7 +38,7 @@ class _HTTPTransport:
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "sigmashake-python/0.1.0",
+            "User-Agent": "sigmashake-python/1.0.0",
         }
         if async_mode:
             self._async_client = httpx.AsyncClient(

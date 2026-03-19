@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigmashake"
-version = "0.1.1"
+version = "1.0.0"
 description = "Python SDK for the SigmaShake platform API"
 readme = "README.md"
 license = {text = "MIT"}
@@ -13,7 +13,7 @@ authors = [
     { name = "SigmaShake Inc", email = "engineering@sigmashake.com" },
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
