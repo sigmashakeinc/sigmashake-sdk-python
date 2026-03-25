@@ -16,6 +16,7 @@ from .exceptions import (
 __all__ = [
     "__version__",
     "SigmaShake",
+    "PulseResource",
     "SigmaShakeError",
     "AuthenticationError",
     "AuthorizationError",
