@@ -141,6 +141,7 @@ class SigmaShake:
         self.db = DBResource(self._transport)
         self.memory = MemoryResource(self._transport)
         self.fleet = FleetResource(self._transport)
+        self.pulse = PulseResource(self._transport)
         # documents uses its own resource
         self.documents = _DocumentsResource(self._transport)
 
