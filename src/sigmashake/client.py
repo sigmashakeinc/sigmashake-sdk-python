@@ -14,6 +14,7 @@ from .exceptions import raise_for_status
 from .fleet import FleetResource
 from .gateway import GatewayResource
 from .memory import MemoryResource
+from .pulse import PulseResource
 from .shield import ShieldResource
 from .soc import SOCResource
 
