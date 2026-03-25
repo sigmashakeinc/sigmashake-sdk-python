@@ -2,6 +2,7 @@
 
 from ._version import __version__
 from .client import SigmaShake
+from .pulse import PulseResource
 from .exceptions import (
     AuthenticationError,
     AuthorizationError,
