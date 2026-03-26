@@ -22,10 +22,10 @@ class TestSOCSyncCalls:
         with respx.mock(base_url=base_url, assert_all_called=False) as router:
             yield router
 
-    def test_list_incidents(
+    def test_list_alerts(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/incidents").mock(
+        mock_api.get("/api/v1/soc/alerts").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -48,13 +48,22 @@ class TestSOCSyncCalls:
                 },
             )
         )
-        incidents = sync_client.soc.list_incidents()
+        incidents = sync_client.soc.list_alerts()
         assert len(incidents) == 2
         assert all(isinstance(i, StoredIncident) for i in incidents)
         assert incidents[0].severity == "critical"
         assert incidents[1].title == "Anomaly detected"
 
-    def test_list_incidents_with_filters(
+    def test_list_incidents_deprecated_alias(
+        self, sync_client: SigmaShake, mock_api: respx.Router
+    ) -> None:
+        mock_api.get("/api/v1/soc/alerts").mock(
+            return_value=httpx.Response(200, json={"incidents": []})
+        )
+        incidents = sync_client.soc.list_incidents()
+        assert incidents == []
+
+    def test_list_alerts_with_filters(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
         captured = {}
@@ -76,8 +85,8 @@ class TestSOCSyncCalls:
                 },
             )
 
-        mock_api.get("/v1/soc/incidents").mock(side_effect=capture)
-        incidents = sync_client.soc.list_incidents(
+        mock_api.get("/api/v1/soc/alerts").mock(side_effect=capture)
+        incidents = sync_client.soc.list_alerts(
             status="open", severity="critical", limit=50
         )
         assert captured["params"]["status"] == "open"
@@ -85,19 +94,19 @@ class TestSOCSyncCalls:
         assert captured["params"]["limit"] == "50"
         assert len(incidents) == 1
 
-    def test_list_incidents_empty(
+    def test_list_alerts_empty(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/incidents").mock(
+        mock_api.get("/api/v1/soc/alerts").mock(
             return_value=httpx.Response(200, json={"incidents": []})
         )
-        incidents = sync_client.soc.list_incidents()
+        incidents = sync_client.soc.list_alerts()
         assert incidents == []
 
     def test_get_timeline(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/sessions/sess-1/timeline").mock(
+        mock_api.get("/api/v1/soc/timeline/sess-1").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -114,46 +123,11 @@ class TestSOCSyncCalls:
         assert timeline.session_id == "sess-1"
         assert len(timeline.events) == 2
 
-    def test_top_hosts(
+    def test_top_hosts_raises_not_implemented(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/analytics/top-hosts").mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "hosts": [
-                        {"host": "api.example.com", "request_count": 500},
-                        {"host": "cdn.example.com", "request_count": 300},
-                    ]
-                },
-            )
-        )
-        hosts = sync_client.soc.top_hosts(tenant_id="t1")
-        assert len(hosts) == 2
-        assert all(isinstance(h, HostTrafficSummary) for h in hosts)
-        assert hosts[0].host == "api.example.com"
-        assert hosts[0].request_count == 500
-
-    def test_top_hosts_with_limit(
-        self, sync_client: SigmaShake, mock_api: respx.Router
-    ) -> None:
-        captured = {}
-
-        def capture(request: httpx.Request) -> httpx.Response:
-            captured["params"] = dict(request.url.params)
-            return httpx.Response(
-                200,
-                json={
-                    "hosts": [
-                        {"host": "api.example.com", "request_count": 500},
-                    ]
-                },
-            )
-
-        mock_api.get("/v1/soc/analytics/top-hosts").mock(side_effect=capture)
-        sync_client.soc.top_hosts(tenant_id="t1", limit=5)
-        assert captured["params"]["limit"] == "5"
-        assert captured["params"]["tenant_id"] == "t1"
+        with pytest.raises(NotImplementedError, match="Not yet implemented"):
+            sync_client.soc.top_hosts(tenant_id="t1")
 
 
 class TestSOCErrorHandling:
