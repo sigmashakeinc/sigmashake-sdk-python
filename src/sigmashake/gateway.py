@@ -83,3 +83,84 @@ class GatewayResource:
         }
         data = await self._t.async_request("POST", "/v1/gateway/intercept/post", json=body)
         return InterceptResult.model_validate(data)
+
+    def wrap(self, fn, *, agent_id: str = "default", session_id: Optional[str] = None):
+        """Wrap a callable so every call is intercepted by the SigmaShake gateway.
+
+        The wrapped function behaves identically to the original — gateway
+        interception is transparent and non-fatal (if the gateway is unreachable,
+        the function still executes normally).
+
+        Usage (3 commands to first event)::
+
+            import sigmashake
+            client = sigmashake.SigmaShake(api_key="sk-...")
+            monitored_fn = client.gateway.wrap(my_agent_tool)
+        """
+        import functools
+        import uuid
+
+        sid = session_id or str(uuid.uuid4())
+
+        @functools.wraps(fn)
+        def wrapped(*args, **kwargs):
+            name = getattr(fn, "__name__", "unknown_tool")
+            input_data: Dict[str, Any] = {"args": list(args), "kwargs": kwargs}
+            try:
+                self.intercept_pre(
+                    name=name,
+                    input=input_data,
+                    session_id=sid,
+                    agent_id=agent_id,
+                )
+            except Exception:
+                pass  # gateway unreachable — continue anyway
+            result = fn(*args, **kwargs)
+            try:
+                self.intercept_post(
+                    name=name,
+                    input=input_data,
+                    output=result if isinstance(result, (dict, list, str, int, float, bool, type(None))) else str(result),
+                    session_id=sid,
+                    agent_id=agent_id,
+                )
+            except Exception:
+                pass
+            return result
+
+        return wrapped
+
+    def async_wrap(self, fn, *, agent_id: str = "default", session_id: Optional[str] = None):
+        """Async version of wrap() for async agent tools."""
+        import functools
+        import uuid
+
+        sid = session_id or str(uuid.uuid4())
+
+        @functools.wraps(fn)
+        async def wrapped(*args, **kwargs):
+            name = getattr(fn, "__name__", "unknown_tool")
+            input_data: Dict[str, Any] = {"args": list(args), "kwargs": kwargs}
+            try:
+                await self.async_intercept_pre(
+                    name=name,
+                    input=input_data,
+                    session_id=sid,
+                    agent_id=agent_id,
+                )
+            except Exception:
+                pass
+            result = await fn(*args, **kwargs)
+            try:
+                await self.async_intercept_post(
+                    name=name,
+                    input=input_data,
+                    output=result if isinstance(result, (dict, list, str, int, float, bool, type(None))) else str(result),
+                    session_id=sid,
+                    agent_id=agent_id,
+                )
+            except Exception:
+                pass
+            return result
+
+        return wrapped
