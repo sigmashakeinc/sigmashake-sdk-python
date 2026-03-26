@@ -62,6 +62,73 @@ cd ../sigmashake-openapi
 The validator exits non-zero when drift is detected. Run it before submitting
 changes to `models.py` and after any OpenAPI spec updates.
 
+## API Reference
+
+### `SigmaShake` — Main Client
+
+```python
+client = SigmaShake(api_key="sk-...", base_url="https://api.sigmashake.com", timeout=30.0)
+```
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `auth` | `AuthResource` | Token creation and validation |
+| `shield` | `ShieldResource` | Agent registration and operation scanning |
+| `memory` | `MemoryResource` | Key-value memory store per agent |
+| `agents` | `AgentsResource` | Agent CRUD and listing |
+| `accounts` | `AccountsResource` | Account management |
+| `fleet` | `FleetResource` | Fleet registration and status |
+| `gateway` | `GatewayResource` | Gateway log retrieval |
+| `soc` | `SocResource` | Incidents and SOC operations |
+| `pulse` | `PulseResource` | Platform health and bottleneck reporting |
+| `db` | `DbResource` | Database query interface |
+
+### `AuthResource`
+
+| Method | Description |
+|--------|-------------|
+| `create_token(agent_id, scopes, ttl_secs)` | Create a scoped auth token |
+| `validate_token(token)` | Validate a token and return claims |
+
+### `ShieldResource`
+
+| Method | Description |
+|--------|-------------|
+| `register_agent(agent_id, agent_type, session_ttl_secs)` | Register an agent session |
+| `scan(agent_id, session_id, operation)` | Scan an operation for policy violations |
+| `end_session(session_id)` | End an active agent session |
+
+### `MemoryResource`
+
+| Method | Description |
+|--------|-------------|
+| `store(key, value, tags)` | Store a key-value pair |
+| `retrieve(key)` | Retrieve a stored value |
+| `list(tags)` | List memory entries matching tags |
+| `delete(key)` | Delete a memory entry |
+
+### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `SigmaShakeError` | Base exception for all SDK errors |
+| `AuthenticationError` | Invalid or missing API key |
+| `AuthorizationError` | Insufficient permissions |
+| `NotFoundError` | Requested resource not found |
+| `ValidationError` | Request validation failure |
+| `RateLimitError` | Rate limit exceeded |
+| `ServerError` | Server-side error |
+
+## Documentation
+
+Build Sphinx HTML docs locally:
+
+```bash
+pip install sigmashake[dev]
+make docs
+# Output in docs/_build/html/index.html
+```
+
 ## License
 
 MIT
