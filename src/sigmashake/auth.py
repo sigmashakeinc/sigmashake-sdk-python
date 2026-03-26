@@ -21,12 +21,12 @@ class AuthResource:
 
     def create_token(self, agent_id: str, scopes: List[str] | None = None) -> TokenResponse:
         body = {"agent_id": agent_id, "scopes": scopes or []}
-        data = self._t.request("POST", "/v1/auth/token", json=body)
+        data = self._t.request("POST", "/api/auth/token", json=body)
         return TokenResponse.model_validate(data)
 
     async def async_create_token(self, agent_id: str, scopes: List[str] | None = None) -> TokenResponse:
         body = {"agent_id": agent_id, "scopes": scopes or []}
-        data = await self._t.async_request("POST", "/v1/auth/token", json=body)
+        data = await self._t.async_request("POST", "/api/auth/token", json=body)
         return TokenResponse.model_validate(data)
 
 
@@ -42,9 +42,7 @@ class IdentityResource:
         capabilities: List[str] | None = None,
         ttl_secs: int = 3600,
     ) -> IdentityTokenResponse:
-        body = {"agent_id": agent_id, "capabilities": capabilities or [], "ttl_secs": ttl_secs}
-        data = self._t.request("POST", "/v1/identity/issue", json=body)
-        return IdentityTokenResponse.model_validate(data)
+        raise NotImplementedError("Not yet implemented")
 
     async def async_issue(
         self,
@@ -52,6 +50,4 @@ class IdentityResource:
         capabilities: List[str] | None = None,
         ttl_secs: int = 3600,
     ) -> IdentityTokenResponse:
-        body = {"agent_id": agent_id, "capabilities": capabilities or [], "ttl_secs": ttl_secs}
-        data = await self._t.async_request("POST", "/v1/identity/issue", json=body)
-        return IdentityTokenResponse.model_validate(data)
+        raise NotImplementedError("Not yet implemented")
