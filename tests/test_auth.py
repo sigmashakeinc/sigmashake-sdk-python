@@ -25,7 +25,7 @@ class TestAuthSyncCalls:
     def test_create_token_success(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -44,7 +44,7 @@ class TestAuthSyncCalls:
     def test_create_token_multiple_scopes(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -62,7 +62,7 @@ class TestAuthSyncCalls:
     def test_create_token_no_scopes_defaults_empty(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -93,7 +93,7 @@ class TestAuthSyncCalls:
                 },
             )
 
-        mock_api.post("/v1/auth/token").mock(side_effect=capture)
+        mock_api.post("/api/auth/token").mock(side_effect=capture)
         sync_client.auth.create_token(agent_id="agent-42", scopes=["read"])
         assert captured["body"]["agent_id"] == "agent-42"
         assert captured["body"]["scopes"] == ["read"]
@@ -108,7 +108,7 @@ class TestAuthErrorHandling:
     def test_401_raises_authentication_error(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(401, json={"message": "Invalid API key"})
         )
         with pytest.raises(AuthenticationError) as exc_info:
@@ -118,7 +118,7 @@ class TestAuthErrorHandling:
     def test_403_raises_authorization_error(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(403, json={"message": "Forbidden"})
         )
         with pytest.raises(AuthorizationError):
@@ -127,7 +127,7 @@ class TestAuthErrorHandling:
     def test_429_raises_rate_limit_error_with_retry_after(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(
                 429, json={"message": "Too many requests", "retry_after": 2.5}
             )
@@ -139,7 +139,7 @@ class TestAuthErrorHandling:
     def test_500_raises_server_error(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(500, json={"message": "Internal error"})
         )
         with pytest.raises(ServerError) as exc_info:
@@ -157,7 +157,7 @@ class TestAuthAsyncCalls:
     async def test_async_create_token(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -178,7 +178,7 @@ class TestAuthAsyncCalls:
     async def test_async_create_token_error(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/auth/token").mock(
+        mock_api.post("/api/auth/token").mock(
             return_value=httpx.Response(401, json={"message": "Unauthorized"})
         )
         with pytest.raises(AuthenticationError):
