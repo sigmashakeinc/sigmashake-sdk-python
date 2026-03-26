@@ -180,10 +180,10 @@ class TestSOCAsyncCalls:
             yield router
 
     @pytest.mark.asyncio
-    async def test_async_list_incidents(
+    async def test_async_list_alerts(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/incidents").mock(
+        mock_api.get("/api/v1/soc/alerts").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -199,16 +199,27 @@ class TestSOCAsyncCalls:
                 },
             )
         )
-        incidents = await async_client.soc.async_list_incidents()
+        incidents = await async_client.soc.async_list_alerts()
         assert len(incidents) == 1
         assert incidents[0].severity == "high"
+        await async_client.aclose()
+
+    @pytest.mark.asyncio
+    async def test_async_list_incidents_deprecated(
+        self, async_client: SigmaShake, mock_api: respx.Router
+    ) -> None:
+        mock_api.get("/api/v1/soc/alerts").mock(
+            return_value=httpx.Response(200, json={"incidents": []})
+        )
+        incidents = await async_client.soc.async_list_incidents()
+        assert incidents == []
         await async_client.aclose()
 
     @pytest.mark.asyncio
     async def test_async_get_timeline(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/sessions/sess-1/timeline").mock(
+        mock_api.get("/api/v1/soc/timeline/sess-1").mock(
             return_value=httpx.Response(
                 200,
                 json={"session_id": "sess-1", "events": [{"type": "start", "ts": 0}]},
@@ -219,19 +230,9 @@ class TestSOCAsyncCalls:
         await async_client.aclose()
 
     @pytest.mark.asyncio
-    async def test_async_top_hosts(
-        self, async_client: SigmaShake, mock_api: respx.Router
+    async def test_async_top_hosts_not_implemented(
+        self, async_client: SigmaShake
     ) -> None:
-        mock_api.get("/v1/soc/analytics/top-hosts").mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "hosts": [
-                        {"host": "api.example.com", "request_count": 100},
-                    ]
-                },
-            )
-        )
-        hosts = await async_client.soc.async_top_hosts(tenant_id="t1")
-        assert len(hosts) == 1
+        with pytest.raises(NotImplementedError):
+            await async_client.soc.async_top_hosts(tenant_id="t1")
         await async_client.aclose()
