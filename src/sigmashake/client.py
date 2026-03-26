@@ -145,6 +145,23 @@ class SigmaShake:
         # documents uses its own resource
         self.documents = _DocumentsResource(self._transport)
 
+    # -- convenience ----------------------------------------------------------
+
+    def ping(self) -> Dict[str, Any]:
+        """Verify connectivity to the SigmaShake API.
+
+        Returns:
+            dict with 'status' ('ok') and 'latency_ms' (int).
+
+        Raises:
+            SigmaShakeError if the API is unreachable.
+        """
+        import time
+
+        start = time.time()
+        self._transport.request("GET", "/v1/health")
+        return {"status": "ok", "latency_ms": int((time.time() - start) * 1000)}
+
     # -- context managers -----------------------------------------------------
 
     def __enter__(self) -> "SigmaShake":
