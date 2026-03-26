@@ -63,11 +63,11 @@ class AccountsResource:
         return Subscription.model_validate(data)
 
     def update_subscription(self, account_id: str, **kwargs: Any) -> Subscription:
-        data = self._t.request("PATCH", f"/v1/accounts/{account_id}/subscription", json=kwargs)
+        data = self._t.request("PUT", f"/v1/accounts/{account_id}/subscription", json=kwargs)
         return Subscription.model_validate(data)
 
     async def async_update_subscription(self, account_id: str, **kwargs: Any) -> Subscription:
-        data = await self._t.async_request("PATCH", f"/v1/accounts/{account_id}/subscription", json=kwargs)
+        data = await self._t.async_request("PUT", f"/v1/accounts/{account_id}/subscription", json=kwargs)
         return Subscription.model_validate(data)
 
     # -- seats ----------------------------------------------------------------
