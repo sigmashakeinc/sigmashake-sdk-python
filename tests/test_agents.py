@@ -22,6 +22,24 @@ class TestAgentsSyncCalls:
         with respx.mock(base_url=base_url, assert_all_called=False) as router:
             yield router
 
+    def test_update_agent(
+        self, sync_client: SigmaShake, mock_api: respx.Router
+    ) -> None:
+        mock_api.patch("/v1/agents/agent-1").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "agent_id": "agent-1",
+                    "agent_type": "coding",
+                    "status": "active",
+                    "metadata": {"region": "eu-west-1"},
+                },
+            )
+        )
+        result = sync_client.agents.update("agent-1", metadata={"region": "eu-west-1"})
+        assert result["agent_id"] == "agent-1"
+        assert result["metadata"]["region"] == "eu-west-1"
+
     def test_register_agent(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
