@@ -34,6 +34,8 @@ dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
     "respx>=0.20",
+    "sphinx>=7.0",
+    "sphinx-autodoc-typehints>=1.25",
 ]
 
 [project.urls]
