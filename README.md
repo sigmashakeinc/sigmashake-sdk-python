@@ -41,6 +41,27 @@ async with SigmaShake(api_key="sk-...", async_mode=True) as client:
     token = await client.auth.create_token(agent_id="agent-1", scopes=["read"])
 ```
 
+## OpenAPI Drift Detection
+
+Models in `src/sigmashake/models.py` must match the canonical OpenAPI spec in
+`sigmashake-openapi/openapi.yaml`. A drift detector validates that all schemas
+and fields in the spec are represented in the SDK.
+
+```bash
+# From SDK root (requires sigmashake-openapi as sibling)
+python3 scripts/validate_models.py
+
+# JSON output for CI
+python3 scripts/validate_models.py --json
+
+# Or from the openapi repo
+cd ../sigmashake-openapi
+./validate-sdks.sh --python
+```
+
+The validator exits non-zero when drift is detected. Run it before submitting
+changes to `models.py` and after any OpenAPI spec updates.
+
 ## License
 
 MIT
