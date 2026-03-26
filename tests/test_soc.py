@@ -136,43 +136,40 @@ class TestSOCErrorHandling:
         with respx.mock(base_url=base_url, assert_all_called=False) as router:
             yield router
 
-    def test_401_on_list_incidents(
+    def test_401_on_list_alerts(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/incidents").mock(
+        mock_api.get("/api/v1/soc/alerts").mock(
             return_value=httpx.Response(401, json={"message": "Unauthorized"})
         )
         with pytest.raises(AuthenticationError):
-            sync_client.soc.list_incidents()
+            sync_client.soc.list_alerts()
 
     def test_404_on_get_timeline(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/sessions/nonexistent/timeline").mock(
+        mock_api.get("/api/v1/soc/timeline/nonexistent").mock(
             return_value=httpx.Response(404, json={"message": "Session not found"})
         )
         with pytest.raises(NotFoundError):
             sync_client.soc.get_timeline("nonexistent")
 
-    def test_429_on_list_incidents(
+    def test_429_on_list_alerts(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/incidents").mock(
+        mock_api.get("/api/v1/soc/alerts").mock(
             return_value=httpx.Response(
                 429, json={"message": "Rate limited", "retry_after": 2.0}
             )
         )
         with pytest.raises(RateLimitError) as exc_info:
-            sync_client.soc.list_incidents()
+            sync_client.soc.list_alerts()
         assert exc_info.value.retry_after == 2.0
 
-    def test_500_on_top_hosts(
+    def test_top_hosts_not_implemented(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/soc/analytics/top-hosts").mock(
-            return_value=httpx.Response(500, json={"message": "Internal error"})
-        )
-        with pytest.raises(ServerError):
+        with pytest.raises(NotImplementedError):
             sync_client.soc.top_hosts(tenant_id="t1")
 
 
