@@ -213,12 +213,12 @@ class TestMemoryAsyncCalls:
     async def test_async_store(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/memory").mock(
+        mock_api.put("/api/v1/agents/agent-1/memory/k").mock(
             return_value=httpx.Response(
                 200, json={"key": "k", "value": "v", "tags": []}
             )
         )
-        entry = await async_client.memory.async_store(key="k", value="v")
+        entry = await async_client.memory.async_store("agent-1", key="k", value="v")
         assert entry.key == "k"
         await async_client.aclose()
 
@@ -226,12 +226,12 @@ class TestMemoryAsyncCalls:
     async def test_async_get(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/memory/k").mock(
+        mock_api.get("/api/v1/agents/agent-1/memory/k").mock(
             return_value=httpx.Response(
                 200, json={"key": "k", "value": "v", "tags": ["t1"]}
             )
         )
-        entry = await async_client.memory.async_get("k")
+        entry = await async_client.memory.async_get("agent-1", "k")
         assert entry.value == "v"
         await async_client.aclose()
 
@@ -239,7 +239,7 @@ class TestMemoryAsyncCalls:
     async def test_async_recall(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/memory/recall").mock(
+        mock_api.post("/api/v1/agents/agent-1/memory/search").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -249,7 +249,7 @@ class TestMemoryAsyncCalls:
                 },
             )
         )
-        entries = await async_client.memory.async_recall(tags=["t"])
+        entries = await async_client.memory.async_recall("agent-1", query="t")
         assert len(entries) == 1
         await async_client.aclose()
 
@@ -257,8 +257,8 @@ class TestMemoryAsyncCalls:
     async def test_async_delete(
         self, async_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.delete("/v1/memory/k").mock(
+        mock_api.delete("/api/v1/agents/agent-1/memory/k").mock(
             return_value=httpx.Response(200, json={})
         )
-        await async_client.memory.async_delete("k")
+        await async_client.memory.async_delete("agent-1", "k")
         await async_client.aclose()
