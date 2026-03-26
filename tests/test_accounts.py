@@ -128,7 +128,7 @@ class TestAccountsSyncCalls:
     def test_update_subscription(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.patch("/v1/accounts/acc-1/subscription").mock(
+        mock_api.put("/v1/accounts/acc-1/subscription").mock(
             return_value=httpx.Response(
                 200,
                 json={
