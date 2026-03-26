@@ -11,6 +11,30 @@ pip install sigmashake
 ## Quick Start
 
 ```python
+import sigmashake
+
+client = sigmashake.SigmaShake(api_key="sk-...")
+my_tool = client.gateway.wrap(my_agent_function)
+# All calls to my_tool are now intercepted, logged, and policy-checked
+```
+
+### Test connectivity
+
+```python
+print(client.ping())  # {"status": "ok", "latency_ms": 23}
+```
+
+### Add multiple tools at once
+
+```python
+search = client.gateway.wrap(search_fn)
+write_file = client.gateway.wrap(write_file_fn)
+query_db = client.gateway.wrap(query_db_fn)
+```
+
+### More examples
+
+```python
 from sigmashake import SigmaShake
 
 client = SigmaShake(api_key="sk-...")
