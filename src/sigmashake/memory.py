@@ -18,64 +18,56 @@ class MemoryResource:
 
     def store(
         self,
+        agent_id: str,
         key: str,
         value: str,
         tags: Optional[List[str]] = None,
     ) -> MemoryEntry:
         body = {"key": key, "value": value, "tags": tags or []}
-        data = self._t.request("POST", "/v1/memory", json=body)
+        data = self._t.request("PUT", f"/api/v1/agents/{agent_id}/memory/{key}", json=body)
         return MemoryEntry.model_validate(data)
 
     async def async_store(
         self,
+        agent_id: str,
         key: str,
         value: str,
         tags: Optional[List[str]] = None,
     ) -> MemoryEntry:
         body = {"key": key, "value": value, "tags": tags or []}
-        data = await self._t.async_request("POST", "/v1/memory", json=body)
+        data = await self._t.async_request("PUT", f"/api/v1/agents/{agent_id}/memory/{key}", json=body)
         return MemoryEntry.model_validate(data)
 
-    def get(self, key: str) -> MemoryEntry:
-        data = self._t.request("GET", f"/v1/memory/{key}")
+    def get(self, agent_id: str, key: str) -> MemoryEntry:
+        data = self._t.request("GET", f"/api/v1/agents/{agent_id}/memory/{key}")
         return MemoryEntry.model_validate(data)
 
-    async def async_get(self, key: str) -> MemoryEntry:
-        data = await self._t.async_request("GET", f"/v1/memory/{key}")
+    async def async_get(self, agent_id: str, key: str) -> MemoryEntry:
+        data = await self._t.async_request("GET", f"/api/v1/agents/{agent_id}/memory/{key}")
         return MemoryEntry.model_validate(data)
 
     def recall(
         self,
-        tags: Optional[List[str]] = None,
-        prefix: Optional[str] = None,
-        limit: int = 100,
+        agent_id: str,
+        query: str,
     ) -> List[MemoryEntry]:
-        body: dict[str, Any] = {"limit": limit}
-        if tags:
-            body["tags"] = tags
-        if prefix:
-            body["prefix"] = prefix
-        data = self._t.request("POST", "/v1/memory/recall", json=body)
+        body: dict[str, Any] = {"query": query}
+        data = self._t.request("POST", f"/api/v1/agents/{agent_id}/memory/search", json=body)
         items = data.get("entries", data) if isinstance(data, dict) else data
         return [MemoryEntry.model_validate(e) for e in items]
 
     async def async_recall(
         self,
-        tags: Optional[List[str]] = None,
-        prefix: Optional[str] = None,
-        limit: int = 100,
+        agent_id: str,
+        query: str,
     ) -> List[MemoryEntry]:
-        body: dict[str, Any] = {"limit": limit}
-        if tags:
-            body["tags"] = tags
-        if prefix:
-            body["prefix"] = prefix
-        data = await self._t.async_request("POST", "/v1/memory/recall", json=body)
+        body: dict[str, Any] = {"query": query}
+        data = await self._t.async_request("POST", f"/api/v1/agents/{agent_id}/memory/search", json=body)
         items = data.get("entries", data) if isinstance(data, dict) else data
         return [MemoryEntry.model_validate(e) for e in items]
 
-    def delete(self, key: str) -> None:
-        self._t.request("DELETE", f"/v1/memory/{key}")
+    def delete(self, agent_id: str, key: str) -> None:
+        self._t.request("DELETE", f"/api/v1/agents/{agent_id}/memory/{key}")
 
-    async def async_delete(self, key: str) -> None:
-        await self._t.async_request("DELETE", f"/v1/memory/{key}")
+    async def async_delete(self, agent_id: str, key: str) -> None:
+        await self._t.async_request("DELETE", f"/api/v1/agents/{agent_id}/memory/{key}")
