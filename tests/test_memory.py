@@ -157,50 +157,50 @@ class TestMemoryErrorHandling:
     def test_401_on_store(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/memory").mock(
+        mock_api.put("/api/v1/agents/agent-1/memory/k").mock(
             return_value=httpx.Response(401, json={"message": "Unauthorized"})
         )
         with pytest.raises(AuthenticationError):
-            sync_client.memory.store(key="k", value="v")
+            sync_client.memory.store("agent-1", key="k", value="v")
 
     def test_404_on_get(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.get("/v1/memory/nonexistent").mock(
+        mock_api.get("/api/v1/agents/agent-1/memory/nonexistent").mock(
             return_value=httpx.Response(404, json={"message": "Key not found"})
         )
         with pytest.raises(NotFoundError):
-            sync_client.memory.get("nonexistent")
+            sync_client.memory.get("agent-1", "nonexistent")
 
     def test_429_on_store(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/memory").mock(
+        mock_api.put("/api/v1/agents/agent-1/memory/k").mock(
             return_value=httpx.Response(
                 429, json={"message": "Rate limited", "retry_after": 1.5}
             )
         )
         with pytest.raises(RateLimitError) as exc_info:
-            sync_client.memory.store(key="k", value="v")
+            sync_client.memory.store("agent-1", key="k", value="v")
         assert exc_info.value.retry_after == 1.5
 
     def test_500_on_recall(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.post("/v1/memory/recall").mock(
+        mock_api.post("/api/v1/agents/agent-1/memory/search").mock(
             return_value=httpx.Response(500, json={"message": "Internal error"})
         )
         with pytest.raises(ServerError):
-            sync_client.memory.recall()
+            sync_client.memory.recall("agent-1", query="something")
 
     def test_404_on_delete(
         self, sync_client: SigmaShake, mock_api: respx.Router
     ) -> None:
-        mock_api.delete("/v1/memory/missing").mock(
+        mock_api.delete("/api/v1/agents/agent-1/memory/missing").mock(
             return_value=httpx.Response(404, json={"message": "Key not found"})
         )
         with pytest.raises(NotFoundError):
-            sync_client.memory.delete("missing")
+            sync_client.memory.delete("agent-1", "missing")
 
 
 class TestMemoryAsyncCalls:
