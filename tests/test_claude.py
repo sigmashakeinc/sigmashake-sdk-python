@@ -542,6 +542,146 @@ class TestToolExecution:
         )
 
     @pytest.mark.asyncio
+    async def test_create_trigger(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.create_trigger.return_value = {"trigger_id": "t1"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_create_trigger")
+        result = await tool_fn({
+            "agent_id": "a1", "name": "daily-check", "prompt": "Check status",
+        })
+        mock_client.agents.create_trigger.assert_called_once()
+        call_args = mock_client.agents.create_trigger.call_args
+        assert call_args[0][0] == "a1"
+        assert call_args[0][1]["name"] == "daily-check"
+        assert call_args[0][1]["max_turns"] == 10
+
+    @pytest.mark.asyncio
+    async def test_list_triggers(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.list_triggers.return_value = []
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_list_triggers")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.agents.list_triggers.assert_called_once_with("a1")
+
+    @pytest.mark.asyncio
+    async def test_execute_trigger(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.execute_trigger.return_value = {"status": "running"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_execute_trigger")
+        result = await tool_fn({"agent_id": "a1", "trigger_id": "t1"})
+        mock_client.agents.execute_trigger.assert_called_once_with("a1", "t1")
+
+    @pytest.mark.asyncio
+    async def test_get_trigger_status(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.get_trigger_status.return_value = {"status": "completed"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_trigger_status")
+        result = await tool_fn({"agent_id": "a1", "trigger_id": "t1"})
+        mock_client.agents.get_trigger_status.assert_called_once_with("a1", "t1")
+
+    @pytest.mark.asyncio
+    async def test_delete_trigger(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.delete_trigger.return_value = {"deleted": True}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_delete_trigger")
+        result = await tool_fn({"agent_id": "a1", "trigger_id": "t1"})
+        mock_client.agents.delete_trigger.assert_called_once_with("a1", "t1")
+
+    @pytest.mark.asyncio
+    async def test_store_context(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.store_context.return_value = {"stored": True}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_store_context")
+        result = await tool_fn({
+            "agent_id": "a1",
+            "conversation_context": {"messages": []},
+            "system_prompt": "You are helpful",
+        })
+        mock_client.agents.store_context.assert_called_once()
+        call_args = mock_client.agents.store_context.call_args
+        assert call_args[0][0] == "a1"
+        assert call_args[0][1]["system_prompt"] == "You are helpful"
+
+    @pytest.mark.asyncio
+    async def test_get_context(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.get_context.return_value = {"conversation_context": {}}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_context")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.agents.get_context.assert_called_once_with("a1")
+
+    @pytest.mark.asyncio
+    async def test_delete_context(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.delete_context.return_value = {"deleted": True}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_delete_context")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.agents.delete_context.assert_called_once_with("a1")
+
+    @pytest.mark.asyncio
+    async def test_register_tools(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.register_tools.return_value = {"registered": 2}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_register_tools")
+        tool_defs = [
+            {"name": "read_file", "description": "Read a file", "input_schema": {}},
+        ]
+        result = await tool_fn({"agent_id": "a1", "tools": tool_defs})
+        mock_client.agents.register_tools.assert_called_once_with("a1", tool_defs)
+
+    @pytest.mark.asyncio
+    async def test_list_agent_tools(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.list_tools.return_value = []
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_list_agent_tools")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.agents.list_tools.assert_called_once_with("a1")
+
+    @pytest.mark.asyncio
+    async def test_unregister_tool(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.unregister_tool.return_value = {"deleted": True}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_unregister_tool")
+        result = await tool_fn({"agent_id": "a1", "tool_name": "read_file"})
+        mock_client.agents.unregister_tool.assert_called_once_with("a1", "read_file")
+
+    @pytest.mark.asyncio
+    async def test_get_agent_usage(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.get_usage.return_value = {"api_calls": 50}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_agent_usage")
+        result = await tool_fn({
+            "agent_id": "a1", "from_date": "2026-03-01", "to_date": "2026-03-27",
+        })
+        mock_client.agents.get_usage.assert_called_once_with(
+            "a1", from_date="2026-03-01", to_date="2026-03-27"
+        )
+
+    @pytest.mark.asyncio
     async def test_db_scroll(self, mock_client):
         from sigmashake.claude import create_tools
         from sigmashake.models import ScrollQueryResponse
