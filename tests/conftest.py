@@ -2,6 +2,31 @@
 
 from __future__ import annotations
 
+import sys
+from types import ModuleType
+from unittest.mock import MagicMock
+
+# Stub claude_agent_sdk before any test imports it --------------------------------
+if "claude_agent_sdk" not in sys.modules:
+    _mock_sdk = ModuleType("claude_agent_sdk")
+
+    def _tool(name, description, schema):
+        """Minimal tool decorator that attaches metadata."""
+        def decorator(fn):
+            fn.name = name
+            fn.description = description
+            fn.schema = schema
+            return fn
+        return decorator
+
+    _mock_sdk.tool = _tool  # type: ignore[attr-defined]
+    _mock_sdk.create_sdk_mcp_server = MagicMock(return_value={"name": "sigmashake"})  # type: ignore[attr-defined]
+    _mock_sdk.ClaudeSDKClient = MagicMock  # type: ignore[attr-defined]
+    _mock_sdk.ClaudeAgentOptions = MagicMock  # type: ignore[attr-defined]
+    _mock_sdk.AgentDefinition = MagicMock  # type: ignore[attr-defined]
+    sys.modules["claude_agent_sdk"] = _mock_sdk
+# ----------------------------------------------------------------------------------
+
 import pytest
 import respx
 
