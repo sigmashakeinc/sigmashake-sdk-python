@@ -22,7 +22,7 @@ class TestCreateTools:
         from sigmashake.claude import create_tools
 
         tools = create_tools(mock_client)
-        assert len(tools) == 37
+        assert len(tools) == 49
 
     def test_tool_names(self, mock_client):
         from sigmashake.claude import create_tools
