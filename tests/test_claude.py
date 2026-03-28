@@ -78,6 +78,22 @@ class TestCreateTools:
         assert "sigmashake_get_subscription" in names
         # Auth
         assert "sigmashake_create_token" in names
+        # Triggers
+        assert "sigmashake_create_trigger" in names
+        assert "sigmashake_list_triggers" in names
+        assert "sigmashake_execute_trigger" in names
+        assert "sigmashake_get_trigger_status" in names
+        assert "sigmashake_delete_trigger" in names
+        # Context
+        assert "sigmashake_store_context" in names
+        assert "sigmashake_get_context" in names
+        assert "sigmashake_delete_context" in names
+        # Agent Tools
+        assert "sigmashake_register_tools" in names
+        assert "sigmashake_list_agent_tools" in names
+        assert "sigmashake_unregister_tool" in names
+        # Agent Usage
+        assert "sigmashake_get_agent_usage" in names
 
 
 class TestJsonResult:
