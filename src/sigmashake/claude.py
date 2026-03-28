@@ -226,22 +226,338 @@ def create_tools(client: SigmaShake) -> list:
         )
         return _json_result(result)
 
+    @tool(
+        "sigmashake_register_agent",
+        "Register a new agent with the SigmaShake platform",
+        {"agent_id": str, "agent_type": str, "metadata": dict},
+    )
+    async def register_agent(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.register(
+            agent_id=args["agent_id"],
+            agent_type=args["agent_type"],
+            metadata=args.get("metadata"),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_agent",
+        "Get details of a registered agent by ID",
+        {"agent_id": str},
+    )
+    async def get_agent(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.get(agent_id=args["agent_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_update_agent",
+        "Update an agent's metadata",
+        {"agent_id": str, "metadata": dict},
+    )
+    async def update_agent(args: Dict[str, Any]) -> Dict[str, Any]:
+        metadata = args.get("metadata", {})
+        result = client.agents.update(agent_id=args["agent_id"], **metadata)
+        return _json_result(result)
+
+    # -- Shield ---------------------------------------------------------------
+
+    @tool(
+        "sigmashake_shield_register",
+        "Register an agent session with the security shield",
+        {"agent_id": str, "agent_type": str, "session_ttl_secs": int, "metadata": dict},
+    )
+    async def shield_register(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.shield.register_agent(
+            agent_id=args["agent_id"],
+            agent_type=args["agent_type"],
+            session_ttl_secs=args.get("session_ttl_secs", 3600),
+            metadata=args.get("metadata"),
+        )
+        return _json_result(result)
+
+    # -- Pulse (remaining) ----------------------------------------------------
+
+    @tool(
+        "sigmashake_get_pipeline_runs",
+        "List recent pipeline runs with optional time range filter",
+        {"page": int, "per_page": int, "from_ts": str, "to_ts": str},
+    )
+    async def get_pipeline_runs(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.pulse.get_runs(
+            page=args.get("page", 1),
+            per_page=args.get("per_page", 20),
+            from_ts=args.get("from_ts"),
+            to_ts=args.get("to_ts"),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_pipeline_run",
+        "Get full detail for a specific pipeline run by ID",
+        {"run_id": str},
+    )
+    async def get_pipeline_run(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.pulse.get_run(run_id=args["run_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_trigger_pipeline",
+        "Trigger a new pipeline run",
+        {"trigger_type": str, "config": dict},
+    )
+    async def trigger_pipeline(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.pulse.trigger_run(
+            trigger_type=args["trigger_type"],
+            config=args.get("config"),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_push_events",
+        "Ingest external events into the Pulse pipeline for correlation",
+        {"events": list},
+    )
+    async def push_events(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.pulse.push_event(events=args["events"])
+        return _json_result(result)
+
+    # -- Fleet ----------------------------------------------------------------
+
+    @tool(
+        "sigmashake_fleet_status",
+        "Get fleet-wide status summary (total, online, degraded, offline agents)",
+        {},
+    )
+    async def fleet_status(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.fleet.status()
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_list_agents",
+        "List agents in the fleet with optional status filter",
+        {"status": str, "limit": int, "offset": int},
+    )
+    async def fleet_list_agents(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.fleet.list_agents(
+            status=args.get("status"),
+            limit=args.get("limit", 100),
+            offset=args.get("offset", 0),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_get_agent",
+        "Get detailed info for a specific fleet agent",
+        {"agent_id": str},
+    )
+    async def fleet_get_agent(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.fleet.get_agent(agent_id=args["agent_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_send_command",
+        "Send a command to a specific fleet agent (restart, pause, resume, etc.)",
+        {"agent_id": str, "command_type": str, "payload": dict},
+    )
+    async def fleet_send_command(args: Dict[str, Any]) -> Dict[str, Any]:
+        from .models import FleetCommand
+        cmd = FleetCommand(
+            command_type=args["command_type"],
+            payload=args.get("payload", {}),
+        )
+        result = client.fleet.send_command(agent_id=args["agent_id"], command=cmd)
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_broadcast",
+        "Broadcast a command to all fleet agents",
+        {"command_type": str, "payload": dict},
+    )
+    async def fleet_broadcast(args: Dict[str, Any]) -> Dict[str, Any]:
+        from .models import FleetCommand
+        cmd = FleetCommand(
+            command_type=args["command_type"],
+            payload=args.get("payload", {}),
+        )
+        result = client.fleet.broadcast(command=cmd)
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_agent_metrics",
+        "Get resource metrics for a specific fleet agent",
+        {"agent_id": str, "period": str},
+    )
+    async def fleet_agent_metrics(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.fleet.get_metrics(
+            agent_id=args["agent_id"],
+            period=args.get("period"),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_fleet_command_history",
+        "Get command history for a specific fleet agent",
+        {"agent_id": str, "limit": int, "offset": int},
+    )
+    async def fleet_command_history(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.fleet.get_command_history(
+            agent_id=args["agent_id"],
+            limit=args.get("limit", 100),
+            offset=args.get("offset", 0),
+        )
+        return _json_result(result)
+
+    # -- Gateway --------------------------------------------------------------
+
+    @tool(
+        "sigmashake_gateway_intercept_pre",
+        "Run a pre-execution gateway intercept on a tool call",
+        {"name": str, "input": dict, "session_id": str, "agent_id": str},
+    )
+    async def gateway_intercept_pre(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.gateway.intercept_pre(
+            name=args["name"],
+            input=args["input"],
+            session_id=args["session_id"],
+            agent_id=args["agent_id"],
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_gateway_intercept_post",
+        "Run a post-execution gateway intercept on a tool call result",
+        {"name": str, "input": dict, "output": dict, "session_id": str, "agent_id": str},
+    )
+    async def gateway_intercept_post(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.gateway.intercept_post(
+            name=args["name"],
+            input=args["input"],
+            output=args.get("output"),
+            session_id=args["session_id"],
+            agent_id=args["agent_id"],
+        )
+        return _json_result(result)
+
+    # -- Accounts -------------------------------------------------------------
+
+    @tool(
+        "sigmashake_get_account",
+        "Get account details by ID",
+        {"account_id": str},
+    )
+    async def get_account(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.accounts.get(account_id=args["account_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_account_usage",
+        "Get usage metrics for an account",
+        {"account_id": str},
+    )
+    async def get_account_usage(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.accounts.get_usage(account_id=args["account_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_subscription",
+        "Get subscription details for an account",
+        {"account_id": str},
+    )
+    async def get_subscription(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.accounts.get_subscription(account_id=args["account_id"])
+        return _json_result(result)
+
+    # -- Auth -----------------------------------------------------------------
+
+    @tool(
+        "sigmashake_create_token",
+        "Create an auth token for an agent with specified scopes",
+        {"agent_id": str, "scopes": list},
+    )
+    async def create_token(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.auth.create_token(
+            agent_id=args["agent_id"],
+            scopes=args.get("scopes"),
+        )
+        return _json_result(result)
+
+    # -- DB (remaining) -------------------------------------------------------
+
+    @tool(
+        "sigmashake_db_scroll",
+        "Scroll through large database result sets with cursor-based pagination",
+        {"table_name": str, "batch_size": int, "cursor": str, "filters": list},
+    )
+    async def db_scroll(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.db.scroll(
+            table_name=args["table_name"],
+            batch_size=args.get("batch_size", 100),
+            cursor=args.get("cursor"),
+            filters=args.get("filters"),
+        )
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_db_insert",
+        "Insert rows into a SigmaShake database table",
+        {"table_name": str, "columns": list},
+    )
+    async def db_insert(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.db.insert(
+            table_name=args["table_name"],
+            columns=args["columns"],
+        )
+        return _json_result(result)
+
     return [
+        # Documents
         search_documents,
+        # DB
         query_db,
         vector_search,
+        db_scroll,
+        db_insert,
+        # Memory
         store_memory,
         recall_memory,
         get_memory,
         delete_memory,
+        # SOC
         list_alerts,
         get_timeline,
+        # Shield
         shield_scan,
+        shield_register,
+        # Pulse
         pipeline_status,
         pipeline_metrics,
         bottlenecks,
         ai_brief,
+        get_pipeline_runs,
+        get_pipeline_run,
+        trigger_pipeline,
+        push_events,
+        # Agents
         list_agents,
+        register_agent,
+        get_agent,
+        update_agent,
+        # Fleet
+        fleet_status,
+        fleet_list_agents,
+        fleet_get_agent,
+        fleet_send_command,
+        fleet_broadcast,
+        fleet_agent_metrics,
+        fleet_command_history,
+        # Gateway
+        gateway_intercept_pre,
+        gateway_intercept_post,
+        # Accounts
+        get_account,
+        get_account_usage,
+        get_subscription,
+        # Auth
+        create_token,
     ]
 
 
