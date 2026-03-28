@@ -257,3 +257,296 @@ class TestToolExecution:
         agents_tool = next(t for t in tools if t.name == "sigmashake_list_agents")
         result = await agents_tool({"limit": 50})
         mock_client.agents.list.assert_called_once_with(limit=50, offset=0)
+
+    @pytest.mark.asyncio
+    async def test_register_agent(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.register.return_value = {"agent_id": "a1", "status": "registered"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_register_agent")
+        result = await tool_fn({"agent_id": "a1", "agent_type": "worker"})
+        mock_client.agents.register.assert_called_once_with(
+            agent_id="a1", agent_type="worker", metadata=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_agent(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.get.return_value = {"agent_id": "a1"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_agent")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.agents.get.assert_called_once_with(agent_id="a1")
+
+    @pytest.mark.asyncio
+    async def test_update_agent(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.agents.update.return_value = {"agent_id": "a1"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_update_agent")
+        result = await tool_fn({"agent_id": "a1", "metadata": {"name": "new"}})
+        mock_client.agents.update.assert_called_once_with(agent_id="a1", name="new")
+
+    @pytest.mark.asyncio
+    async def test_shield_register(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import AgentSession
+        from datetime import datetime
+
+        mock_client.shield.register_agent.return_value = AgentSession(
+            session_id="s1", agent_id="a1", agent_type="worker",
+            created_at=datetime.now(), expires_at=datetime.now(),
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_shield_register")
+        result = await tool_fn({"agent_id": "a1", "agent_type": "worker"})
+        mock_client.shield.register_agent.assert_called_once_with(
+            agent_id="a1", agent_type="worker", session_ttl_secs=3600, metadata=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_pipeline_runs(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.pulse.get_runs.return_value = {"items": [], "total": 0}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_pipeline_runs")
+        result = await tool_fn({"page": 2, "per_page": 10})
+        mock_client.pulse.get_runs.assert_called_once_with(
+            page=2, per_page=10, from_ts=None, to_ts=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_pipeline_run(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.pulse.get_run.return_value = {"run_id": "r1"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_pipeline_run")
+        result = await tool_fn({"run_id": "r1"})
+        mock_client.pulse.get_run.assert_called_once_with(run_id="r1")
+
+    @pytest.mark.asyncio
+    async def test_trigger_pipeline(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.pulse.trigger_run.return_value = {"run_id": "r1"}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_trigger_pipeline")
+        result = await tool_fn({"trigger_type": "manual"})
+        mock_client.pulse.trigger_run.assert_called_once_with(
+            trigger_type="manual", config=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_push_events(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.pulse.push_event.return_value = {"accepted": 1}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_push_events")
+        events = [{"event_type": "deploy", "timestamp": "2026-03-27T00:00:00Z"}]
+        result = await tool_fn({"events": events})
+        mock_client.pulse.push_event.assert_called_once_with(events=events)
+
+    @pytest.mark.asyncio
+    async def test_fleet_status(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetStatus
+
+        mock_client.fleet.status.return_value = FleetStatus(total=10, online=8, degraded=1, offline=1)
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_status")
+        result = await tool_fn({})
+        mock_client.fleet.status.assert_called_once()
+        parsed = json.loads(result["content"][0]["text"])
+        assert parsed["total"] == 10
+
+    @pytest.mark.asyncio
+    async def test_fleet_list_agents(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetAgentListResponse
+
+        mock_client.fleet.list_agents.return_value = FleetAgentListResponse(agents=[], total=0)
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_list_agents")
+        result = await tool_fn({"status": "active"})
+        mock_client.fleet.list_agents.assert_called_once_with(status="active", limit=100, offset=0)
+
+    @pytest.mark.asyncio
+    async def test_fleet_get_agent(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetAgentDetail
+
+        mock_client.fleet.get_agent.return_value = FleetAgentDetail(agent_id="a1", status="active")
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_get_agent")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.fleet.get_agent.assert_called_once_with(agent_id="a1")
+
+    @pytest.mark.asyncio
+    async def test_fleet_send_command(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetCommandResponse
+
+        mock_client.fleet.send_command.return_value = FleetCommandResponse(
+            command_id="c1", command_type="restart"
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_send_command")
+        result = await tool_fn({"agent_id": "a1", "command_type": "restart"})
+        mock_client.fleet.send_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_fleet_broadcast(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetBroadcastResponse
+
+        mock_client.fleet.broadcast.return_value = FleetBroadcastResponse(
+            command_id="c1", command_type="pause", target_count=5
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_broadcast")
+        result = await tool_fn({"command_type": "pause"})
+        mock_client.fleet.broadcast.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_fleet_agent_metrics(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetMetricsResponse
+
+        mock_client.fleet.get_metrics.return_value = FleetMetricsResponse(agent_id="a1", metrics=[])
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_agent_metrics")
+        result = await tool_fn({"agent_id": "a1", "period": "1h"})
+        mock_client.fleet.get_metrics.assert_called_once_with(agent_id="a1", period="1h")
+
+    @pytest.mark.asyncio
+    async def test_fleet_command_history(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import FleetCommandHistory
+
+        mock_client.fleet.get_command_history.return_value = FleetCommandHistory(
+            agent_id="a1", commands=[], total=0
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_fleet_command_history")
+        result = await tool_fn({"agent_id": "a1"})
+        mock_client.fleet.get_command_history.assert_called_once_with(
+            agent_id="a1", limit=100, offset=0
+        )
+
+    @pytest.mark.asyncio
+    async def test_gateway_intercept_pre(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import InterceptResult
+
+        mock_client.gateway.intercept_pre.return_value = InterceptResult(allowed=True)
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_gateway_intercept_pre")
+        result = await tool_fn({
+            "name": "read_file", "input": {"path": "/tmp/x"},
+            "session_id": "s1", "agent_id": "a1",
+        })
+        mock_client.gateway.intercept_pre.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_gateway_intercept_post(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import InterceptResult
+
+        mock_client.gateway.intercept_post.return_value = InterceptResult(allowed=True)
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_gateway_intercept_post")
+        result = await tool_fn({
+            "name": "read_file", "input": {"path": "/tmp/x"},
+            "output": {"content": "data"}, "session_id": "s1", "agent_id": "a1",
+        })
+        mock_client.gateway.intercept_post.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_account(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import Account
+        from datetime import datetime
+
+        mock_client.accounts.get.return_value = Account(
+            id="acc1", name="Test", tier="pro", created_at=datetime.now()
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_account")
+        result = await tool_fn({"account_id": "acc1"})
+        mock_client.accounts.get.assert_called_once_with(account_id="acc1")
+
+    @pytest.mark.asyncio
+    async def test_get_account_usage(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import TenantUsage
+        from datetime import datetime
+
+        mock_client.accounts.get_usage.return_value = TenantUsage(
+            account_id="acc1", period_start=datetime.now(), period_end=datetime.now(),
+            api_calls=100, storage_bytes=1024,
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_account_usage")
+        result = await tool_fn({"account_id": "acc1"})
+        mock_client.accounts.get_usage.assert_called_once_with(account_id="acc1")
+
+    @pytest.mark.asyncio
+    async def test_get_subscription(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import Subscription
+
+        mock_client.accounts.get_subscription.return_value = Subscription(
+            id="sub1", account_id="acc1", tier="pro", status="active"
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_get_subscription")
+        result = await tool_fn({"account_id": "acc1"})
+        mock_client.accounts.get_subscription.assert_called_once_with(account_id="acc1")
+
+    @pytest.mark.asyncio
+    async def test_create_token(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import TokenResponse
+        from datetime import datetime
+
+        mock_client.auth.create_token.return_value = TokenResponse(
+            token="tok_xxx", expires_at=datetime.now(), scopes=["read"]
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_create_token")
+        result = await tool_fn({"agent_id": "a1", "scopes": ["read"]})
+        mock_client.auth.create_token.assert_called_once_with(
+            agent_id="a1", scopes=["read"]
+        )
+
+    @pytest.mark.asyncio
+    async def test_db_scroll(self, mock_client):
+        from sigmashake.claude import create_tools
+        from sigmashake.models import ScrollQueryResponse
+
+        mock_client.db.scroll.return_value = ScrollQueryResponse(
+            columns=["id"], rows=[[1]], has_more=False
+        )
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_db_scroll")
+        result = await tool_fn({"table_name": "logs", "batch_size": 50})
+        mock_client.db.scroll.assert_called_once_with(
+            table_name="logs", batch_size=50, cursor=None, filters=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_db_insert(self, mock_client):
+        from sigmashake.claude import create_tools
+
+        mock_client.db.insert.return_value = {"inserted": 1}
+        tools = create_tools(mock_client)
+        tool_fn = next(t for t in tools if t.name == "sigmashake_db_insert")
+        cols = [{"name": "id", "data": [1]}]
+        result = await tool_fn({"table_name": "events", "columns": cols})
+        mock_client.db.insert.assert_called_once_with(table_name="events", columns=cols)
