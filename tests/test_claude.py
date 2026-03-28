@@ -22,28 +22,62 @@ class TestCreateTools:
         from sigmashake.claude import create_tools
 
         tools = create_tools(mock_client)
-        assert len(tools) == 15
+        assert len(tools) == 37
 
     def test_tool_names(self, mock_client):
         from sigmashake.claude import create_tools
 
         tools = create_tools(mock_client)
         names = [t.name for t in tools]
+        # Documents
         assert "sigmashake_search_documents" in names
+        # DB
         assert "sigmashake_query_db" in names
         assert "sigmashake_vector_search" in names
+        assert "sigmashake_db_scroll" in names
+        assert "sigmashake_db_insert" in names
+        # Memory
         assert "sigmashake_store_memory" in names
         assert "sigmashake_recall_memory" in names
         assert "sigmashake_get_memory" in names
         assert "sigmashake_delete_memory" in names
+        # SOC
         assert "sigmashake_list_alerts" in names
         assert "sigmashake_get_timeline" in names
+        # Shield
         assert "sigmashake_shield_scan" in names
+        assert "sigmashake_shield_register" in names
+        # Pulse
         assert "sigmashake_pipeline_status" in names
         assert "sigmashake_pipeline_metrics" in names
         assert "sigmashake_bottlenecks" in names
         assert "sigmashake_ai_brief" in names
+        assert "sigmashake_get_pipeline_runs" in names
+        assert "sigmashake_get_pipeline_run" in names
+        assert "sigmashake_trigger_pipeline" in names
+        assert "sigmashake_push_events" in names
+        # Agents
         assert "sigmashake_list_agents" in names
+        assert "sigmashake_register_agent" in names
+        assert "sigmashake_get_agent" in names
+        assert "sigmashake_update_agent" in names
+        # Fleet
+        assert "sigmashake_fleet_status" in names
+        assert "sigmashake_fleet_list_agents" in names
+        assert "sigmashake_fleet_get_agent" in names
+        assert "sigmashake_fleet_send_command" in names
+        assert "sigmashake_fleet_broadcast" in names
+        assert "sigmashake_fleet_agent_metrics" in names
+        assert "sigmashake_fleet_command_history" in names
+        # Gateway
+        assert "sigmashake_gateway_intercept_pre" in names
+        assert "sigmashake_gateway_intercept_post" in names
+        # Accounts
+        assert "sigmashake_get_account" in names
+        assert "sigmashake_get_account_usage" in names
+        assert "sigmashake_get_subscription" in names
+        # Auth
+        assert "sigmashake_create_token" in names
 
 
 class TestJsonResult:
