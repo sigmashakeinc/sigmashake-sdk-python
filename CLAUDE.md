@@ -46,7 +46,7 @@ See `ARCHITECTURE-AGENT-LOOP.md` in sigmashake_inc for full architecture details
 
 ## NO DIRECT DEPLOYS
 
-**All deployments must go through `sigmashake-ci`.** Never run `wrangler pages deploy`, `wrangler deploy`, or any direct Cloudflare deployment command. Enforced by:
+**All deployments must go through `sigmashake-ci`.** Never run `wrangler deploy` or any direct Cloudflare deployment command. sigmashake.com is a Worker (`loco-app-prod`), NOT Pages. Enforced by:
 - `no-direct-deploy` governance rule (ERROR, blocks commit)
 - `block-direct-deploy.sh` PreToolUse hook (blocks Bash command)
 

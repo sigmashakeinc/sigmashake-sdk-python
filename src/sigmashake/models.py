@@ -562,7 +562,7 @@ class FleetAlertThresholds(BaseModel):
 
 
 class FleetConfig(BaseModel):
-    heartbeat_interval_secs: int = 30
+    heartbeat_interval_secs: int = 60
     metrics_interval_secs: int = 60
     max_agents: int = 1000
     alert_thresholds: FleetAlertThresholds = Field(default_factory=FleetAlertThresholds)

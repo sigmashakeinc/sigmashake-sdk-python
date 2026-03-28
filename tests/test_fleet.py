@@ -165,7 +165,7 @@ class TestFleetModels:
 
     def test_fleet_config_defaults(self) -> None:
         config = FleetConfig()
-        assert config.heartbeat_interval_secs == 30
+        assert config.heartbeat_interval_secs == 60
         assert config.metrics_interval_secs == 60
         assert config.alert_thresholds.missed_heartbeats == 3
 
@@ -352,7 +352,7 @@ class TestFleetSyncCalls:
             return_value=httpx.Response(
                 200,
                 json={
-                    "heartbeat_interval_secs": 30,
+                    "heartbeat_interval_secs": 60,
                     "metrics_interval_secs": 60,
                     "max_agents": 1000,
                     "alert_thresholds": {"missed_heartbeats": 3, "error_rate_pct": 5.0},
@@ -361,7 +361,7 @@ class TestFleetSyncCalls:
             )
         )
         config = sync_client.fleet.get_config()
-        assert config.heartbeat_interval_secs == 30
+        assert config.heartbeat_interval_secs == 60
         assert config.alert_thresholds.missed_heartbeats == 3
 
     def test_fleet_update_config(
@@ -455,7 +455,7 @@ class TestFleetAsyncCalls:
             return_value=httpx.Response(
                 200,
                 json={
-                    "heartbeat_interval_secs": 30,
+                    "heartbeat_interval_secs": 60,
                     "metrics_interval_secs": 60,
                     "max_agents": 1000,
                     "alert_thresholds": {"missed_heartbeats": 3, "error_rate_pct": 5.0},
@@ -464,5 +464,5 @@ class TestFleetAsyncCalls:
             )
         )
         config = await async_client.fleet.async_get_config()
-        assert config.heartbeat_interval_secs == 30
+        assert config.heartbeat_interval_secs == 60
         await async_client.aclose()
