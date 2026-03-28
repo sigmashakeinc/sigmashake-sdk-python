@@ -707,6 +707,22 @@ def create_tools(client: SigmaShake) -> list:
         get_subscription,
         # Auth
         create_token,
+        # Triggers
+        create_trigger,
+        list_triggers,
+        execute_trigger,
+        get_trigger_status,
+        delete_trigger,
+        # Context
+        store_context,
+        get_context,
+        delete_context,
+        # Agent Tools
+        register_tools,
+        list_agent_tools,
+        unregister_tool,
+        # Agent Usage
+        get_agent_usage,
     ]
 
 
