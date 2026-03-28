@@ -480,6 +480,155 @@ def create_tools(client: SigmaShake) -> list:
         )
         return _json_result(result)
 
+    # -- Triggers -------------------------------------------------------------
+
+    @tool(
+        "sigmashake_create_trigger",
+        "Create a remote trigger for an agent",
+        {
+            "agent_id": str,
+            "name": str,
+            "prompt": str,
+            "tools": list,
+            "max_turns": int,
+            "model": str,
+            "schedule": str,
+        },
+    )
+    async def create_trigger(args: Dict[str, Any]) -> Dict[str, Any]:
+        body: Dict[str, Any] = {
+            "name": args["name"],
+            "prompt": args["prompt"],
+        }
+        if args.get("tools") is not None:
+            body["tools"] = args["tools"]
+        if args.get("max_turns") is not None:
+            body["max_turns"] = args["max_turns"]
+        else:
+            body["max_turns"] = 10
+        if args.get("model") is not None:
+            body["model"] = args["model"]
+        if args.get("schedule") is not None:
+            body["schedule"] = args["schedule"]
+        result = client.agents.create_trigger(args["agent_id"], body)
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_list_triggers",
+        "List remote triggers for an agent",
+        {"agent_id": str},
+    )
+    async def list_triggers(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.list_triggers(args["agent_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_execute_trigger",
+        "Execute a remote trigger for an agent",
+        {"agent_id": str, "trigger_id": str},
+    )
+    async def execute_trigger(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.execute_trigger(args["agent_id"], args["trigger_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_trigger_status",
+        "Get execution status of a remote trigger",
+        {"agent_id": str, "trigger_id": str},
+    )
+    async def get_trigger_status(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.get_trigger_status(args["agent_id"], args["trigger_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_delete_trigger",
+        "Delete a remote trigger for an agent",
+        {"agent_id": str, "trigger_id": str},
+    )
+    async def delete_trigger(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.delete_trigger(args["agent_id"], args["trigger_id"])
+        return _json_result(result)
+
+    # -- Context --------------------------------------------------------------
+
+    @tool(
+        "sigmashake_store_context",
+        "Store conversation context for an agent",
+        {"agent_id": str, "conversation_context": dict, "system_prompt": str, "tool_config": dict},
+    )
+    async def store_context(args: Dict[str, Any]) -> Dict[str, Any]:
+        body: Dict[str, Any] = {
+            "conversation_context": args["conversation_context"],
+        }
+        if args.get("system_prompt") is not None:
+            body["system_prompt"] = args["system_prompt"]
+        if args.get("tool_config") is not None:
+            body["tool_config"] = args["tool_config"]
+        result = client.agents.store_context(args["agent_id"], body)
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_get_context",
+        "Get stored conversation context for an agent",
+        {"agent_id": str},
+    )
+    async def get_context(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.get_context(args["agent_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_delete_context",
+        "Delete stored conversation context for an agent",
+        {"agent_id": str},
+    )
+    async def delete_context(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.delete_context(args["agent_id"])
+        return _json_result(result)
+
+    # -- Agent Tools ----------------------------------------------------------
+
+    @tool(
+        "sigmashake_register_tools",
+        "Register tools for an agent",
+        {"agent_id": str, "tools": list},
+    )
+    async def register_tools(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.register_tools(args["agent_id"], args["tools"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_list_agent_tools",
+        "List registered tools for an agent",
+        {"agent_id": str},
+    )
+    async def list_agent_tools(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.list_tools(args["agent_id"])
+        return _json_result(result)
+
+    @tool(
+        "sigmashake_unregister_tool",
+        "Unregister a tool from an agent",
+        {"agent_id": str, "tool_name": str},
+    )
+    async def unregister_tool(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.unregister_tool(args["agent_id"], args["tool_name"])
+        return _json_result(result)
+
+    # -- Agent Usage ----------------------------------------------------------
+
+    @tool(
+        "sigmashake_get_agent_usage",
+        "Get usage metrics for an agent",
+        {"agent_id": str, "from_date": str, "to_date": str},
+    )
+    async def get_agent_usage(args: Dict[str, Any]) -> Dict[str, Any]:
+        result = client.agents.get_usage(
+            args["agent_id"],
+            from_date=args.get("from_date"),
+            to_date=args.get("to_date"),
+        )
+        return _json_result(result)
+
     # -- DB (remaining) -------------------------------------------------------
 
     @tool(
